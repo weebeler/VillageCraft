@@ -1,0 +1,23 @@
+name: VillageCraft
+version: '0.1'
+main: org.vcteam.villageCraft.Main
+api-version: '1.21'
+authors: [ VillageCraft Team ]
+description: A Minecraft MMORPG
+commands:
+  debug:
+  addperm:
+  remperm:
+  toggledebug:
+  home:
+  saveschem:
+  locone:
+  loctwo:
+  loadschem:
+  gnh:
+  setstat:
+  getstat:
+  addstat:
+  substat:
+  vcsummon:
+  vcgive:
