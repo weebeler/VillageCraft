@@ -1,0 +1,6 @@
+name: VillageCraft
+version: '0.1'
+main: org.weebeler.villageCraft.Main
+api-version: '1.21'
+authors: [ weebeler ]
+description: MMORPG fusing village-building games like Clash of Clans with dimension MMORPGs like Elder Scrolls Online
