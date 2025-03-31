@@ -7,6 +7,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.weebeler.villageCraft.Main;
+import org.weebeler.villageCraft.Villagers.Flag;
 import org.weebeler.villageCraft.Villagers.Stat;
 
 import java.util.ArrayList;
@@ -25,6 +26,7 @@ public class GenericItem implements Cloneable {
     public Type type;
     public HashMap<Stat, Double> stats;
     public ActiveSlot slot;
+    public ArrayList<Flag> flags;
 
     public GenericItem(ItemStack m, String n, String i, List<String> l, Rarity r, Type t, ActiveSlot s) {
         model = m;
@@ -34,6 +36,7 @@ public class GenericItem implements Cloneable {
         rarity = r;
         type = t;
         stats = new HashMap<>();
+        flags = new ArrayList<>();
         slot = s;
     }
 
@@ -74,8 +77,8 @@ public class GenericItem implements Cloneable {
     public Object clone() {
         try {
             return (GenericItem) super.clone();
-        } catch (CloneNotSupportedException ignored) {
+        } catch (CloneNotSupportedException e) {
+            throw new RuntimeException(e);
         }
-        return null;
     }
 }

@@ -12,4 +12,5 @@ commands:
   home:
   spawn:
   vcgive:
+  vcsummon:
   getstat:

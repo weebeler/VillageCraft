@@ -6,6 +6,7 @@ import net.minecraft.server.network.ServerCommonPacketListenerImpl;
 import org.weebeler.villageCraft.Main;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 public class DetectNPCClicks extends PacketEvent{
     public DetectNPCClicks() {
@@ -21,15 +22,16 @@ public class DetectNPCClicks extends PacketEvent{
 
             Field click = packet.getClass().getDeclaredField("c");
             click.setAccessible(true);
-            Object obj = click.get(packet);
+            Object clickType = click.get(packet);
+            System.out.println(clickType.toString());
 
-            if (obj.toString().split("\\$")[1].charAt(0) == 'e') {
+            if (clickType.toString().split("\\$")[1].charAt(0) == 'e' || clickType.toString().split("\\$")[1].charAt(0) == '1') {
                 return;
             }
 
-            Field hand = obj.getClass().getDeclaredField("a");
+            Field hand = clickType.getClass().getDeclaredField("a");
             hand.setAccessible(true);
-            if (!hand.get(obj).toString().equals("MAIN_HAND")) {
+            if (!hand.get(clickType).toString().equals("MAIN_HAND")) {
                 return;
             }
 
@@ -38,7 +40,7 @@ public class DetectNPCClicks extends PacketEvent{
                 clicked.onClick(listener.getCraftPlayer().getHandle());
             }
 
-        } catch (NoSuchFieldException | IllegalAccessException e) {
+        } catch (IllegalAccessException | NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
     }

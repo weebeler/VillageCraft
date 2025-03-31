@@ -5,10 +5,13 @@ import org.bukkit.entity.Player;
 import org.weebeler.villageCraft.Main;
 import org.weebeler.villageCraft.Worlds.Home;
 
+import java.util.ArrayList;
+
 public class Villager {
     public Player player;
     public Home home;
     public StatProfile statProfile;
+    public FlagProfile flags;
 
     public Villager(Player p) {
         player = p;
@@ -16,6 +19,7 @@ public class Villager {
         home = Home.create(Home.class, p.getUniqueId().toString());
         Main.servers.add(home);
         statProfile = new StatProfile();
+        flags = new FlagProfile();
     }
     public void kill() {
         ((LivingEntity) player).damage(Math.pow(1, -500));

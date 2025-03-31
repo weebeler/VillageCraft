@@ -44,6 +44,13 @@ public class StatProfile {
             tempModifiers.put(stat, val);
         }
     }
+    public void subtractTempStat(Stat stat, double val) {
+        if (tempModifiers.containsKey(stat)) {
+            tempModifiers.put(stat, tempModifiers.get(stat) - val);
+        } else {
+            tempModifiers.put(stat, -1 * val);
+        }
+    }
     public double getVal(Stat stat) {
         double bonus = 0;
         double base = 0;

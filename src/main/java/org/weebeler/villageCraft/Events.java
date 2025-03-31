@@ -4,6 +4,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
@@ -12,7 +13,6 @@ import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.util.BoundingBox;
 import org.weebeler.villageCraft.Items.Backend.GenericItem;
 import org.weebeler.villageCraft.Items.Backend.GenericUUIDItem;
-import org.weebeler.villageCraft.Items.FeatherBoots;
 import org.weebeler.villageCraft.NPCs.SpawnNPC;
 import org.weebeler.villageCraft.Villagers.Admin;
 import org.weebeler.villageCraft.Villagers.Villager;
@@ -72,21 +72,20 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void featherBoots(EntityDamageEvent e) {
-        if (e.getCause() == EntityDamageEvent.DamageCause.FALL && e.getEntity() instanceof Player p) {
-            System.out.println("Player took fall damage!");
-            if (p.getInventory().getBoots() != null) {
-                System.out.println("Player wearing boots!");
-                try {
-                    GenericItem boots = Main.getItem(p.getInventory().getBoots().getItemMeta().getPersistentDataContainer().get(GenericItem.idKey, PersistentDataType.STRING));
-                    System.out.println(boots.name);
-                    if (boots instanceof FeatherBoots) {
-                        e.setCancelled(true);
-                    }
-                } catch (RuntimeException ex) {
-                    ex.printStackTrace();
-                }
-            }
+    public void handleRandomDamage(EntityDamageEvent e) {
+        if (e.getEntity() instanceof Player && !(e instanceof EntityDamageByEntityEvent)) {
+            Main.damageHandler.miscPlayer(e);
+        }
+    }
+
+    @EventHandler
+    public void handleDamage(EntityDamageByEntityEvent e) {
+        if (e.getEntity() instanceof Player && e.getDamager() instanceof Player) {
+            e.setCancelled(true);
+        } else if (e.getEntity() instanceof Player) {
+            Main.damageHandler.entityOnPlayer(e);
+        } else if (e.getDamager() instanceof Player) {
+            Main.damageHandler.playerOnEntity(e);
         }
     }
 }

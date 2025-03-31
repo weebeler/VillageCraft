@@ -5,18 +5,23 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.bukkit.*;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.weebeler.villageCraft.Handlers.DamageHandler;
+import org.weebeler.villageCraft.Handlers.StatHandler;
 import org.weebeler.villageCraft.Items.*;
 import org.weebeler.villageCraft.Items.Backend.GenericItem;
 import org.weebeler.villageCraft.Items.Backend.GenericUUIDItem;
+import org.weebeler.villageCraft.Items.Backend.VCGiveCommand;
 import org.weebeler.villageCraft.MiscCommands.GetStatCommand;
 import org.weebeler.villageCraft.MiscCommands.SpawnCommand;
+import org.weebeler.villageCraft.Monsters.Backend.GenericMonster;
+import org.weebeler.villageCraft.Monsters.Backend.VCSummonCommand;
+import org.weebeler.villageCraft.Monsters.Ironclad;
 import org.weebeler.villageCraft.NMS.ConnectionListener;
 import org.weebeler.villageCraft.NMS.DetectNPCClicks;
 import org.weebeler.villageCraft.NMS.PacketListener;
 import org.weebeler.villageCraft.Schematics.*;
 import org.weebeler.villageCraft.Villagers.Admin;
 import org.weebeler.villageCraft.MiscCommands.HomeCommand;
-import org.weebeler.villageCraft.Villagers.StatHandler;
 import org.weebeler.villageCraft.Villagers.Villager;
 import org.weebeler.villageCraft.Worlds.Server;
 import org.weebeler.villageCraft.Worlds.Spawn;
@@ -33,14 +38,18 @@ public final class Main extends JavaPlugin {
 
     public static PacketListener listener;
 
+    public static DamageHandler damageHandler;
+
     public static final String TITLE_SPAWN = "SPAWN";
     public static final String TITLE_UMBRALITH = "UMBRALITH";
 
     public static ArrayList<Server> servers = new ArrayList<>();
     public static ArrayList<Villager> villagers = new ArrayList<>();
     public static ArrayList<GenericUUIDItem> activeItems = new ArrayList<>();
+    public static ArrayList<GenericMonster> aliveMonsters = new ArrayList<>();
 
     public static ArrayList<GenericItem> itemTemplates = new ArrayList<>();
+    public static ArrayList<GenericMonster> monsterTemplates = new ArrayList<>();
 
     public static ArrayList<Admin> admins = new ArrayList<>();
     public static ArrayList<Schematic> schematics = new ArrayList<>();
@@ -51,6 +60,8 @@ public final class Main extends JavaPlugin {
     @Override
     public void onEnable() {
         listener = new PacketListener();
+
+        damageHandler = new DamageHandler();
 
         Bukkit.getPluginManager().registerEvents(new Events(), this);
         Bukkit.getPluginManager().registerEvents(new ConnectionListener(listener), this);
@@ -78,6 +89,9 @@ public final class Main extends JavaPlugin {
                 new RainbowPants(),
                 new FeatherBoots()
         ));
+        monsterTemplates.addAll(Arrays.asList(
+                new Ironclad()
+        ));
 
         getCommand("l1").setExecutor(new L1Command());
         getCommand("l1").setTabCompleter(new CoordinateTabCompleter());
@@ -86,7 +100,8 @@ public final class Main extends JavaPlugin {
         getCommand("save").setExecutor(new SaveCommand());
         getCommand("load").setExecutor(new LoadCommand());
 
-        getCommand("vcgive").setExecutor(new VCGive());
+        getCommand("vcgive").setExecutor(new VCGiveCommand());
+        getCommand("vcsummon").setExecutor(new VCSummonCommand());
 
         getCommand("home").setExecutor(new HomeCommand());
         getCommand("spawn").setExecutor(new SpawnCommand());
@@ -215,5 +230,23 @@ public final class Main extends JavaPlugin {
         } else {
             activeItems.add(add);
         }
+    }
+
+    public static GenericMonster getAliveMonster(UUID uuid) {
+        for (GenericMonster m : aliveMonsters) {
+            if (m.living.getUniqueId().equals(uuid)) {
+                return m;
+            }
+        }
+        throw new RuntimeException();
+    }
+
+    public static GenericMonster getMonsterTemplate(String id) {
+        for (GenericMonster m : monsterTemplates) {
+            if (m.id.equals(id)) {
+                return m;
+            }
+        }
+        throw new RuntimeException();
     }
 }

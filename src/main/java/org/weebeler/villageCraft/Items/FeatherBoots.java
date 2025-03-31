@@ -9,6 +9,7 @@ import org.weebeler.villageCraft.Items.Backend.ActiveSlot;
 import org.weebeler.villageCraft.Items.Backend.GenericUUIDItem;
 import org.weebeler.villageCraft.Items.Backend.Rarity;
 import org.weebeler.villageCraft.Items.Backend.Type;
+import org.weebeler.villageCraft.Villagers.Flag;
 import org.weebeler.villageCraft.Villagers.Stat;
 
 import java.util.Arrays;
@@ -28,6 +29,7 @@ public class FeatherBoots extends GenericUUIDItem {
                 ActiveSlot.ARMOR
         );
         stats.put(Stat.HEALTH, 1.0);
+        flags.add(Flag.NOFALLDAMAGE);
     }
     @Override
     public void onGive() {

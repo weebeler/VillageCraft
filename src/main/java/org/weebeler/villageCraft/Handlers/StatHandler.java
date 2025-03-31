@@ -1,4 +1,4 @@
-package org.weebeler.villageCraft.Villagers;
+package org.weebeler.villageCraft.Handlers;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -11,6 +11,9 @@ import org.weebeler.villageCraft.Items.Backend.ActiveSlot;
 import org.weebeler.villageCraft.Items.Backend.GenericItem;
 import org.weebeler.villageCraft.Items.Backend.GenericUUIDItem;
 import org.weebeler.villageCraft.Main;
+import org.weebeler.villageCraft.Villagers.Stat;
+import org.weebeler.villageCraft.Villagers.StatProfile;
+import org.weebeler.villageCraft.Villagers.Villager;
 
 import java.text.DecimalFormat;
 import java.util.*;
@@ -105,6 +108,20 @@ public class StatHandler {
                         }
                     }
 
+                    // apply flags
+                    for (int i = 0; i < updated.get(v).size(); i++) {
+                        int indx = updated.get(v).get(i);
+                        GenericItem cur = current.get(v).get(indx);
+                        GenericItem sav = saved.get(v).get(indx);
+
+                        if (cur != null) {
+                            v.flags.add(cur);
+                        }
+                        if (sav != null) {
+                            v.flags.remove(sav);
+                        }
+                    }
+
                     // apply modifiers, remove modifiers that are 0
                     ArrayList<Stat> unmodified = new ArrayList<>();
                     for (Map.Entry<Stat, Double> e: sp.tempModifiers.entrySet()) {
@@ -121,7 +138,7 @@ public class StatHandler {
                     if (sp.getTempValue(Stat.HEALTH) < 0) {
                         regenTicks.put(v, (ticks + 1) % REGEN_RATE);
                         if (regenTicks.get(v) == 0) {
-                            sp.addTempStat(Stat.HEALTH, Math.min(-1 * sp.tempModifiers.get(Stat.HEALTH), sp.getVal(Stat.HEALTH) * HEALTH_REGEN_PERCENT));
+                            sp.addTempStat(Stat.HEALTH, Math.min(sp.tempModifiers.get(Stat.HEALTH), sp.getVal(Stat.HEALTH) * HEALTH_REGEN_PERCENT));
                         }
                     }
 
