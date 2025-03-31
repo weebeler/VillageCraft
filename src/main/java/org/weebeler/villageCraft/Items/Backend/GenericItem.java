@@ -1,8 +1,11 @@
-package org.weebeler.villageCraft.Items;
+package org.weebeler.villageCraft.Items.Backend;
 
+import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.persistence.PersistentDataType;
 import org.weebeler.villageCraft.Main;
 import org.weebeler.villageCraft.Villagers.Stat;
 
@@ -11,10 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class GenericItem {
+public class GenericItem implements Cloneable {
     public static final NamespacedKey idKey = new NamespacedKey(Main.getPlugin(Main.class), "ID");
-
-    public boolean built;
 
     public ItemStack model;
     public String name;
@@ -23,19 +24,25 @@ public class GenericItem {
     public Rarity rarity;
     public Type type;
     public HashMap<Stat, Double> stats;
+    public ActiveSlot slot;
 
-    public GenericItem(ItemStack m, String n, String i, List<String> l, Rarity r, Type t, HashMap<Stat, Double> s) {
-        built = false;
+    public GenericItem(ItemStack m, String n, String i, List<String> l, Rarity r, Type t, ActiveSlot s) {
         model = m;
         name = n;
         id = i;
         lore = l;
         rarity = r;
         type = t;
-        stats = s;
+        stats = new HashMap<>();
+        slot = s;
     }
 
-    public void build() {
+    public void give(Player p) {
+        p.getInventory().addItem(model);
+        onGive();
+    }
+
+    public GenericItem build() {
         ItemMeta meta = model.getItemMeta();
         meta.setDisplayName(rarity.color + name);
 
@@ -43,20 +50,32 @@ public class GenericItem {
         for (Map.Entry<Stat, Double> e : stats.entrySet()) {
             Stat s = e.getKey();
             double v = e.getValue();
-            newLore.add(s + ": " + s.color + v);
+            newLore.add(ChatColor.GRAY + "" + s + ": " + s.color + v);
         }
         newLore.addAll(lore);
+        if (!newLore.isEmpty()) {
+            newLore.add("");
+        }
+        newLore.add(rarity.color + ChatColor.BOLD.toString() + rarity.title + " " + type.displayName);
+
         meta.setLore(newLore);
-        if (newLore.isEmpty()) meta.getLore().add("");
 
-        meta.getLore().add(rarity.color + rarity.title + " " + type.displayName);
+        meta.getPersistentDataContainer().set(idKey, PersistentDataType.STRING, id);
 
-        extra();
+        model.setItemMeta(meta);
 
-        built = true;
+        return this;
     }
 
-    public void extra() {
+    public void onGive() {
+    }
 
+    @Override
+    public Object clone() {
+        try {
+            return (GenericItem) super.clone();
+        } catch (CloneNotSupportedException ignored) {
+        }
+        return null;
     }
 }

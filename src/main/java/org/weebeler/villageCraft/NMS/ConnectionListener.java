@@ -1,4 +1,4 @@
-package com.seealio.hsb.NMS;
+package org.weebeler.villageCraft.NMS;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -17,10 +17,6 @@ public class ConnectionListener implements Listener {
         lis.inject(e.getPlayer());
     }
 
-    /**
-     * Remove player connection when they join
-     * @param e
-     */
     @EventHandler
     public void onLeave(PlayerQuitEvent e) {
         lis.stop(e.getPlayer());

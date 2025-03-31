@@ -1,12 +1,12 @@
-package org.weebeler.villageCraft.Items;
+package org.weebeler.villageCraft.Items.Backend;
 
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataType;
 import org.weebeler.villageCraft.Main;
-import org.weebeler.villageCraft.Villagers.Stat;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
@@ -15,14 +15,26 @@ public class GenericUUIDItem extends GenericItem {
 
     public String uuid;
 
-    public GenericUUIDItem(ItemStack m, String n, String i, List<String> l, Rarity r, Type t, HashMap<Stat, Double> s) {
+    public GenericUUIDItem(ItemStack m, String n, String i, List<String> l, Rarity r, Type t, ActiveSlot s) {
         super(m, n, i, l, r, t, s);
         uuid = null;
     }
 
     @Override
-    public void extra() {
+    public void give(Player p) {
         uuid = UUID.randomUUID().toString();
-        model.getItemMeta().getPersistentDataContainer().set(uuidKey, PersistentDataType.STRING, uuid);
+        ItemMeta meta = model.getItemMeta();
+        meta.getPersistentDataContainer().set(uuidKey, PersistentDataType.STRING, uuid);
+        model.setItemMeta(meta);
+
+        p.getInventory().addItem(model);
+        Main.addUUIDItem(this);
+        onGive();
+    }
+
+    public static GenericUUIDItem rebuild(GenericItem from, String uuid) {
+        GenericUUIDItem gen = (GenericUUIDItem) from;
+        gen.uuid = uuid;
+        return gen;
     }
 }

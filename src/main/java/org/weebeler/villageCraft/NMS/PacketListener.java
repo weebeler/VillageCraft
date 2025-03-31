@@ -1,4 +1,4 @@
-package com.seealio.hsb.NMS;
+package org.weebeler.villageCraft.NMS;
 
 import io.netty.channel.*;
 import net.minecraft.network.Connection;
@@ -6,9 +6,9 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.server.network.ServerCommonPacketListenerImpl;
 import org.bukkit.craftbukkit.v1_21_R1.entity.CraftPlayer;
 import org.bukkit.entity.Player;
+
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Locale;
 
 public class PacketListener {
     public ArrayList<PacketEvent> listeners = new ArrayList<>();
@@ -23,7 +23,7 @@ public class PacketListener {
 
             @Override
             public void channelRead(ChannelHandlerContext ctx, Object packet) throws Exception {
-                System.out.println("Packet: " + ((Packet) packet).type().id().toString().substring(10).toUpperCase(Locale.ROOT));
+                //System.out.println("Packet: " + ((Packet) packet).type().id().toString().substring(10).toUpperCase(Locale.ROOT));
                 broadcast((Packet<?>) packet);
 
                 super.channelRead(ctx, packet);
