@@ -6,7 +6,6 @@ import net.minecraft.server.network.ServerCommonPacketListenerImpl;
 import org.weebeler.villageCraft.Main;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 public class DetectNPCClicks extends PacketEvent{
     public DetectNPCClicks() {
@@ -23,7 +22,6 @@ public class DetectNPCClicks extends PacketEvent{
             Field click = packet.getClass().getDeclaredField("c");
             click.setAccessible(true);
             Object clickType = click.get(packet);
-            System.out.println(clickType.toString());
 
             if (clickType.toString().split("\\$")[1].charAt(0) == 'e' || clickType.toString().split("\\$")[1].charAt(0) == '1') {
                 return;

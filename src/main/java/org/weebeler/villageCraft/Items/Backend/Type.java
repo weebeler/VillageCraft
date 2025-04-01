@@ -6,6 +6,7 @@ public enum Type {
     CHESTPLATE("Chestplate"),
     LEGGINGS("Leggings"),
     BOOTS("Boots"),
+    WAND("Wand"),
     SWORD("Sword");
 
     public String displayName;

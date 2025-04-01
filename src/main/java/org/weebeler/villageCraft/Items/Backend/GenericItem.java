@@ -2,6 +2,7 @@ package org.weebeler.villageCraft.Items.Backend;
 
 import org.bukkit.ChatColor;
 import org.bukkit.NamespacedKey;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -27,6 +28,7 @@ public class GenericItem implements Cloneable {
     public HashMap<Stat, Double> stats;
     public ActiveSlot slot;
     public ArrayList<Flag> flags;
+    public boolean placeable = false;
 
     public GenericItem(ItemStack m, String n, String i, List<String> l, Rarity r, Type t, ActiveSlot s) {
         model = m;
@@ -47,6 +49,8 @@ public class GenericItem implements Cloneable {
 
     public GenericItem build() {
         ItemMeta meta = model.getItemMeta();
+        meta.setUnbreakable(true);
+
         meta.setDisplayName(rarity.color + name);
 
         ArrayList<String> newLore = new ArrayList<>();
@@ -71,6 +75,16 @@ public class GenericItem implements Cloneable {
     }
 
     public void onGive() {
+
+    }
+    public void primary(Player player) {
+
+    }
+    public void secondary(Player player) {
+
+    }
+    public void onProjectileHit(Player player, Entity hit) {
+
     }
 
     @Override

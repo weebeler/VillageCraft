@@ -12,7 +12,7 @@ public class Ironclad extends GenericMonster {
                 "Ironclad",
                 "IRONCLAD",
                 100,
-                5
+                15
         );
     }
 

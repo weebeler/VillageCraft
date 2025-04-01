@@ -4,8 +4,13 @@ import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.bukkit.*;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.weebeler.villageCraft.Handlers.DamageHandler;
+import org.weebeler.villageCraft.Handlers.MonsterHandler;
 import org.weebeler.villageCraft.Handlers.StatHandler;
 import org.weebeler.villageCraft.Items.*;
 import org.weebeler.villageCraft.Items.Backend.GenericItem;
@@ -15,6 +20,7 @@ import org.weebeler.villageCraft.MiscCommands.GetStatCommand;
 import org.weebeler.villageCraft.MiscCommands.SpawnCommand;
 import org.weebeler.villageCraft.Monsters.Backend.GenericMonster;
 import org.weebeler.villageCraft.Monsters.Backend.VCSummonCommand;
+import org.weebeler.villageCraft.Monsters.Goop;
 import org.weebeler.villageCraft.Monsters.Ironclad;
 import org.weebeler.villageCraft.NMS.ConnectionListener;
 import org.weebeler.villageCraft.NMS.DetectNPCClicks;
@@ -63,6 +69,11 @@ public final class Main extends JavaPlugin {
 
         damageHandler = new DamageHandler();
 
+        MonsterHandler monsterHandler = new MonsterHandler();
+        monsterHandler.handle();
+        StatHandler statHandler = new StatHandler();
+        statHandler.handleStats();
+
         Bukkit.getPluginManager().registerEvents(new Events(), this);
         Bukkit.getPluginManager().registerEvents(new ConnectionListener(listener), this);
 
@@ -87,10 +98,13 @@ public final class Main extends JavaPlugin {
                 new LeatherHelmet(),
                 new CrystalChestplate(),
                 new RainbowPants(),
-                new FeatherBoots()
+                new FeatherBoots(),
+                new Kunai(),
+                new IceWand()
         ));
         monsterTemplates.addAll(Arrays.asList(
-                new Ironclad()
+                new Ironclad(),
+                new Goop()
         ));
 
         getCommand("l1").setExecutor(new L1Command());
@@ -106,13 +120,22 @@ public final class Main extends JavaPlugin {
         getCommand("home").setExecutor(new HomeCommand());
         getCommand("spawn").setExecutor(new SpawnCommand());
         getCommand("getstat").setExecutor(new GetStatCommand());
-
-        StatHandler handler = new StatHandler();
-        handler.handleStats();
     }
 
     @Override
     public void onDisable() {
+        for (World world : Bukkit.getWorlds()) {
+            for (Entity e : world.getEntities()) {
+                if (e.getType() != EntityType.PLAYER) {
+                    GenericMonster m = getAliveMonster(e.getUniqueId());
+                    if (m != null) {
+                        m.kill();
+                    } else {
+                        e.remove();
+                    }
+                }
+            }
+        }
         saveJson();
     }
 
@@ -215,7 +238,18 @@ public final class Main extends JavaPlugin {
         throw new RuntimeException();
     }
 
-    public static GenericUUIDItem getActiveItem(String uuid) {
+    public static GenericItem getItem(ItemStack item) {
+        String id = item.getItemMeta().getPersistentDataContainer().get(GenericItem.idKey, PersistentDataType.STRING);
+        for (GenericItem i : itemTemplates) {
+            if (i.id.equals(id)) {
+                return i;
+            }
+        }
+        throw new RuntimeException();
+    }
+
+    public static GenericUUIDItem getActiveItem(ItemStack item) {
+        String uuid = item.getItemMeta().getPersistentDataContainer().get(GenericUUIDItem.uuidKey, PersistentDataType.STRING);
         for (GenericUUIDItem i : activeItems) {
             if (i.uuid.equals(uuid)) {
                 return i;
@@ -238,7 +272,7 @@ public final class Main extends JavaPlugin {
                 return m;
             }
         }
-        throw new RuntimeException();
+        return null;
     }
 
     public static GenericMonster getMonsterTemplate(String id) {

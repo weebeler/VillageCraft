@@ -1,18 +1,24 @@
 package org.weebeler.villageCraft;
 
 import org.bukkit.Location;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.SlimeSplitEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.BoundingBox;
 import org.weebeler.villageCraft.Items.Backend.GenericItem;
 import org.weebeler.villageCraft.Items.Backend.GenericUUIDItem;
+import org.weebeler.villageCraft.Monsters.Backend.GenericMonster;
 import org.weebeler.villageCraft.NPCs.SpawnNPC;
 import org.weebeler.villageCraft.Villagers.Admin;
 import org.weebeler.villageCraft.Villagers.Villager;
@@ -26,7 +32,7 @@ public class Events implements Listener {
         Player p = e.getPlayer();
         for (ItemStack i : p.getInventory().getContents()) {
             if (i != null) {
-                GenericItem nouuid = Main.getItem(i.getItemMeta().getPersistentDataContainer().get(GenericItem.idKey, PersistentDataType.STRING));
+                GenericItem nouuid = Main.getItem(i);
                 if (nouuid instanceof GenericUUIDItem) {
                     GenericUUIDItem built = GenericUUIDItem.rebuild(nouuid, i.getItemMeta().getPersistentDataContainer().get(GenericUUIDItem.uuidKey, PersistentDataType.STRING));
                     Main.addUUIDItem(built);
@@ -34,6 +40,7 @@ public class Events implements Listener {
             }
         }
     }
+
 
     @EventHandler
     public void teleportOnJoin(PlayerJoinEvent e) {
@@ -76,6 +83,10 @@ public class Events implements Listener {
         if (e.getEntity() instanceof Player && !(e instanceof EntityDamageByEntityEvent)) {
             Main.damageHandler.miscPlayer(e);
         }
+        if (e.getCause() == EntityDamageEvent.DamageCause.CUSTOM) {
+            return;
+        }
+        e.setDamage(0);
     }
 
     @EventHandler
@@ -83,9 +94,40 @@ public class Events implements Listener {
         if (e.getEntity() instanceof Player && e.getDamager() instanceof Player) {
             e.setCancelled(true);
         } else if (e.getEntity() instanceof Player) {
+            if (e.getEntity().getPersistentDataContainer().has(GenericMonster.nonmonster)) {
+                e.setCancelled(true);
+            }
             Main.damageHandler.entityOnPlayer(e);
         } else if (e.getDamager() instanceof Player) {
             Main.damageHandler.playerOnEntity(e);
         }
+
+        e.setDamage(0);
+    }
+
+    @EventHandler
+    public void castAbility(PlayerInteractEvent e) {
+        if (e.getItem() != null) {
+            GenericItem gen = Main.getItem(e.getItem());
+            if (gen instanceof GenericUUIDItem) {
+                gen = Main.getActiveItem(e.getItem());
+            }
+            if (e.getAction() == Action.LEFT_CLICK_AIR || e.getAction() == Action.LEFT_CLICK_BLOCK) {
+                gen.secondary(e.getPlayer());
+            }
+            if (e.getAction() == Action.RIGHT_CLICK_AIR || e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+                gen.primary(e.getPlayer());
+                if (e.getAction() == Action.RIGHT_CLICK_BLOCK) {
+                    if (!gen.placeable) {
+                        e.setCancelled(true);
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void preventSlimeSplitting(SlimeSplitEvent e) {
+        e.setCancelled(true);
     }
 }

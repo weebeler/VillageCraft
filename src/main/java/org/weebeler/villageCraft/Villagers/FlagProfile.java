@@ -14,11 +14,15 @@ public class FlagProfile {
     }
 
     public void remove(GenericItem i) {
+        Map.Entry<Flag, ArrayList<GenericItem>> entry = null;
         for (Map.Entry<Flag, ArrayList<GenericItem>> e : map.entrySet()) {
             if (i.flags.contains(e.getKey())) {
-                e.getValue().remove(i);
-                removeEmpties();
+                entry = e;
             }
+        }
+        if (entry != null) {
+            entry.getValue().remove(i);
+            removeEmpties();
         }
     }
 
