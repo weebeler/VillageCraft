@@ -25,6 +25,9 @@ import org.weebeler.villageCraft.Villagers.Villager;
 import org.weebeler.villageCraft.Worlds.Home;
 import org.weebeler.villageCraft.Worlds.Server;
 
+import java.util.Objects;
+import java.util.UUID;
+
 public class Events implements Listener {
 
     @EventHandler
@@ -57,8 +60,18 @@ public class Events implements Listener {
             s.getNPC(name).update(spawnLoc);
         }
 
-        Villager v = new Villager(e.getPlayer());
-        Main.villagers.add(v);
+        UUID uuid = e.getPlayer().getUniqueId();
+        boolean found = false;
+        for (Villager v : Main.villagers) {
+            if (Objects.equals(uuid, v.uuid)) {
+                v.player = e.getPlayer();
+                found = true;
+            }
+        }
+        if (!found) {
+            Villager v = new Villager(e.getPlayer());
+            Main.villagers.add(v);
+        }
 
         if (e.getPlayer().isOp()) {
             Admin a = new Admin(e.getPlayer());

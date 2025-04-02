@@ -17,6 +17,7 @@ import org.weebeler.villageCraft.Items.Backend.GenericItem;
 import org.weebeler.villageCraft.Items.Backend.GenericUUIDItem;
 import org.weebeler.villageCraft.Items.Backend.VCGiveCommand;
 import org.weebeler.villageCraft.MiscCommands.GetStatCommand;
+import org.weebeler.villageCraft.MiscCommands.SetStatCommand;
 import org.weebeler.villageCraft.MiscCommands.SpawnCommand;
 import org.weebeler.villageCraft.Monsters.Backend.GenericMonster;
 import org.weebeler.villageCraft.Monsters.Backend.VCSummonCommand;
@@ -61,6 +62,8 @@ public final class Main extends JavaPlugin {
     public static ArrayList<Schematic> schematics = new ArrayList<>();
     public static ArrayList<String> schematicJSONs = new ArrayList<>();
 
+    public static ArrayList<String> villagerJsons = new ArrayList<>();
+    public static File villFile;
     public static File schemFile;
 
     @Override
@@ -82,11 +85,15 @@ public final class Main extends JavaPlugin {
             if (!schemFile.exists()) {
                 schemFile.createNewFile();
             }
+            villFile = new File("C:\\Users\\Natha\\Desktop\\VillageCraft\\json\\villjsons.json");
+            if (!villFile.exists()) {
+                villFile.createNewFile();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        loadJson();
+        loadSchemJson();
 
         servers.add(Spawn.create(Spawn.class, TITLE_SPAWN));
         servers.add(Umbralith.create(Umbralith.class, TITLE_UMBRALITH));
@@ -116,10 +123,13 @@ public final class Main extends JavaPlugin {
 
         getCommand("vcgive").setExecutor(new VCGiveCommand());
         getCommand("vcsummon").setExecutor(new VCSummonCommand());
+        getCommand("setstat").setExecutor(new SetStatCommand());
 
         getCommand("home").setExecutor(new HomeCommand());
         getCommand("spawn").setExecutor(new SpawnCommand());
         getCommand("getstat").setExecutor(new GetStatCommand());
+
+        loadPlayerJson();
     }
 
     @Override
@@ -150,30 +160,67 @@ public final class Main extends JavaPlugin {
             }
 
             try {
-                Gson gson = new GsonBuilder().create();
-                Writer writer = new FileWriter(schemFile, false);
+                Gson schemGson = new GsonBuilder().create();
+                Writer schemWriter = new FileWriter(schemFile, false);
 
-                gson.toJson(schematicJSONs, writer);
-                writer.flush();
-                writer.close();
+                schemGson.toJson(schematicJSONs, schemWriter);
+                schemWriter.flush();
+                schemWriter.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        if (!villagers.isEmpty()) {
+            for (Villager entry : villagers) {
+                String str = entry.serialize();
+
+                if (!villagerJsons.contains(str)) {
+                    villagerJsons.add(str);
+                }
+            }
+
+            try {
+                Gson villGson = new GsonBuilder().create();
+                Writer villWriter = new FileWriter(villFile, false);
+
+                villGson.toJson(villagerJsons, villWriter);
+                villWriter.flush();
+                villWriter.close();
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
-    public void loadJson() {
+    public void loadSchemJson() {
         Gson gson = new Gson();
 
         try {
-            Reader reader = new FileReader(schemFile);
+            Reader schemReader = new FileReader(schemFile);
 
             Type type = new TypeToken<ArrayList<String>>() {}.getType();
-            ArrayList<String> data = gson.fromJson(reader, type);
+            ArrayList<String> data = gson.fromJson(schemReader, type);
 
             for (String str : data) {
                 Schematic s = Schematic.deserialize(str);
                 schematics.add(s);
+            }
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    public void loadPlayerJson() {
+        Gson gson = new Gson();
+
+        try {
+            Reader playerReader = new FileReader(villFile);
+
+            Type type = new TypeToken<ArrayList<String>>() {}.getType();
+            ArrayList<String> data = gson.fromJson(playerReader, type);
+
+            for (String str : data) {
+                Villager v = Villager.deserialize(str);
+                villagers.add(v);
             }
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
@@ -222,6 +269,7 @@ public final class Main extends JavaPlugin {
 
     public static Schematic getSchematic(String name) {
         for (Schematic s : schematics) {
+            System.out.println(s.name);
             if (s.name.equals(name)) {
                 return s;
             }

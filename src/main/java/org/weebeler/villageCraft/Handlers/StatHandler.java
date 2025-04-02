@@ -38,6 +38,9 @@ public class StatHandler {
             @Override
             public void run() {
                 for (Villager v : players) {
+                    if (v.player == null) {
+                        continue;
+                    }
                     if (saved.get(v) == null) {
                         saved.put(v, new ArrayList<>(Arrays.asList(null, null, null, null, null)));
                     }

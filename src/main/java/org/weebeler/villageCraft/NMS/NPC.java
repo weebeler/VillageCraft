@@ -10,6 +10,7 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ClientInformation;
 import net.minecraft.server.level.ServerEntity;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.network.ServerGamePacketListenerImpl;
@@ -44,8 +45,8 @@ public class NPC {
         profile.getProperties().put("textures", new Property("textures", s1, s2));
     }
     public void spawn(Location location) {
-        npc = new ServerPlayer(holder.getServer(), ((CraftWorld) location.getWorld()).getHandle(), profile, new ClientInformation("en_us", 2, ChatVisiblity.HIDDEN, true, 0, net.minecraft.world.entity.player.Player.DEFAULT_MAIN_HAND, false, false));
-        npc.setPos(location.getX(), location.getY(), location.getZ());
+        ServerLevel world = ((CraftWorld) location.getWorld()).getHandle();
+        npc = new ServerPlayer(holder.getServer(), world, profile, new ClientInformation("en_us", 2, ChatVisiblity.HIDDEN, true, 0, net.minecraft.world.entity.player.Player.DEFAULT_MAIN_HAND, false, false));
 
         npc.connection = new ServerGamePacketListenerImpl(
                 ((CraftServer) Bukkit.getServer()).getServer(),
@@ -56,6 +57,8 @@ public class NPC {
 
         update(location);
         npc.setGameMode(GameType.CREATIVE);
+
+        npc.setPos(location.getX(), location.getY(), location.getZ());
     }
     public void hideDisplayName() {
         Team teamScore = Bukkit.getScoreboardManager().getNewScoreboard().registerNewTeam(UUID.randomUUID().toString());
