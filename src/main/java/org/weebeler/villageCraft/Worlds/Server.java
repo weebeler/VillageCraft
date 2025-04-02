@@ -1,5 +1,6 @@
 package org.weebeler.villageCraft.Worlds;
 
+import net.minecraft.server.level.ServerPlayer;
 import org.bukkit.*;
 import org.bukkit.entity.Entity;
 import org.weebeler.villageCraft.NMS.NPC;
@@ -9,6 +10,8 @@ import org.weebeler.villageCraft.WorldGeneration.EmptyChunkGenerator;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.UUID;
 
 public class Server {
     public String name;
@@ -21,31 +24,18 @@ public class Server {
         npcs = new ArrayList<>();
     }
 
-    public boolean containsNPC(String name) {
-        for (NPC n : npcs) {
-            if (n.name.equals(name)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    public NPC getNPC(String name) {
-        for (NPC n : npcs) {
-            if (n.name.equals(name)) {
-                return n;
+    public NPC getNPC(int id) {
+        System.out.println("Passed id: " + id);
+        for (NPC npc : npcs) {
+            System.out.println("Checking NPC: " + npc.name);
+            for (Map.Entry<UUID, Integer> e : npc.versions.entrySet()) {
+                System.out.println("Comparing to id " + e.getValue());
+                if (e.getValue() == id) {
+                    return npc;
+                }
             }
         }
         throw new RuntimeException();
-    }
-
-    public NPC getNPC(int id) {
-        for (NPC n : npcs) {
-            if (n.npc.getBukkitEntity().getEntityId() == id) {
-                return n;
-            }
-        }
-        return null;
     }
     public static <T extends Server> T create(Class<T> clazz, Object... arg) {
         World w;

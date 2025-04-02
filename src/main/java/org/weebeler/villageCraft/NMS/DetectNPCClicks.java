@@ -3,6 +3,7 @@ package org.weebeler.villageCraft.NMS;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ServerboundInteractPacket;
 import net.minecraft.server.network.ServerCommonPacketListenerImpl;
+import org.bukkit.entity.Player;
 import org.weebeler.villageCraft.Main;
 
 import java.lang.reflect.Field;
@@ -13,7 +14,7 @@ public class DetectNPCClicks extends PacketEvent{
     }
 
     @Override
-    public void receive(Packet packet, ServerCommonPacketListenerImpl listener) {
+    public void receive(Packet packet, ServerCommonPacketListenerImpl listener, Player player) {
         try {
             Field id = packet.getClass().getDeclaredField("b");
             id.setAccessible(true);
@@ -33,7 +34,7 @@ public class DetectNPCClicks extends PacketEvent{
                 return;
             }
 
-            NPC clicked = Main.getServer(Main.TITLE_SPAWN).getNPC(entityId);
+            NPC clicked = Main.getServer(player.getWorld().getName()).getNPC(entityId); /* problem here because entity id changes when the npc is respawned by a new player */
             if (clicked != null) {
                 clicked.onClick(listener.getCraftPlayer().getHandle());
             }
@@ -41,11 +42,5 @@ public class DetectNPCClicks extends PacketEvent{
         } catch (IllegalAccessException | NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
-    }
-
-
-    @Override
-    public void kill() {
-        Main.listener.removeListener(this);
     }
 }

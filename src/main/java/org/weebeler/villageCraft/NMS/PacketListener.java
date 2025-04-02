@@ -9,13 +9,18 @@ import org.bukkit.entity.Player;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
-import java.util.Locale;
 
 public class PacketListener {
+    public Player player;
     public ArrayList<PacketEvent> listeners = new ArrayList<>();
-    private ServerCommonPacketListenerImpl listener;
+    public ServerCommonPacketListenerImpl listener;
 
-    public void inject(Player player) {
+    public PacketListener(Player p) {
+        player = p;
+        listener = ((CraftPlayer) player).getHandle().connection;
+    }
+
+    public void inject() {
         ChannelDuplexHandler channelHandler = new ChannelDuplexHandler() {
             @Override
             public void write(ChannelHandlerContext ctx, Object packet, ChannelPromise promise) throws Exception {
@@ -24,15 +29,11 @@ public class PacketListener {
 
             @Override
             public void channelRead(ChannelHandlerContext ctx, Object packet) throws Exception {
-                //System.out.println(packet.toString());
-                //System.out.println("Packet: " + ((Packet) packet).type().id().toString().substring(10).toUpperCase(Locale.ROOT));
                 broadcast((Packet<?>) packet);
 
                 super.channelRead(ctx, packet);
             }
         };
-
-        listener = ((CraftPlayer) player).getHandle().connection;
         Connection connection;
 
         try {
@@ -47,7 +48,7 @@ public class PacketListener {
         pipeline.addBefore("packet_handler", player.getName(), channelHandler);
     }
 
-    public void stop(Player player) {
+    public void stop() {
         ServerCommonPacketListenerImpl packetListenerImpl = ((CraftPlayer) player).getHandle().connection;
         Connection connection;
 
@@ -72,7 +73,7 @@ public class PacketListener {
     public void broadcast(Packet packet) {
         for (PacketEvent e : listeners) {
             if (e.type.isInstance(packet)) {
-                e.receive(packet, listener);
+                e.receive(packet, listener, player);
             }
         }
     }

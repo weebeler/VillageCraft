@@ -7,6 +7,8 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.weebeler.villageCraft.Main;
+import org.weebeler.villageCraft.NMS.DetectNPCClicks;
+import org.weebeler.villageCraft.NMS.PacketListener;
 import org.weebeler.villageCraft.Worlds.Home;
 
 import java.lang.reflect.Type;
@@ -15,6 +17,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class Villager {
+    public PacketListener listener;
     public Player player;
     public UUID uuid;
     public Home home;
@@ -51,13 +54,21 @@ public class Villager {
         VillagerJSON vjs = gson.fromJson(json, type);
         return vjs.create();
     }
+    public void setupListener() {
+        listener = new PacketListener(player);
+        listener.inject();
+        listener.addListener(new DetectNPCClicks());
+    }
+    public void stopListener() {
+        listener.stop();
+    }
 }
 class VillagerJSON {
     String uuid;
     HashMap<String, Double> stats;
 
     public VillagerJSON(Villager v) {
-        uuid = v.player.getUniqueId().toString();
+        uuid = v.uuid.toString();
         stats = new HashMap<>();
         for (Map.Entry<Stat, Double> e : v.statProfile.baseStats.entrySet()) {
             stats.put(e.getKey().name(), e.getValue());

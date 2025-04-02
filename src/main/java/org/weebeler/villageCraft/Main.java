@@ -23,7 +23,6 @@ import org.weebeler.villageCraft.Monsters.Backend.GenericMonster;
 import org.weebeler.villageCraft.Monsters.Backend.VCSummonCommand;
 import org.weebeler.villageCraft.Monsters.Goop;
 import org.weebeler.villageCraft.Monsters.Ironclad;
-import org.weebeler.villageCraft.NMS.ConnectionListener;
 import org.weebeler.villageCraft.NMS.DetectNPCClicks;
 import org.weebeler.villageCraft.NMS.PacketListener;
 import org.weebeler.villageCraft.Schematics.*;
@@ -68,7 +67,6 @@ public final class Main extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        listener = new PacketListener();
 
         damageHandler = new DamageHandler();
 
@@ -78,7 +76,6 @@ public final class Main extends JavaPlugin {
         statHandler.handleStats();
 
         Bukkit.getPluginManager().registerEvents(new Events(), this);
-        Bukkit.getPluginManager().registerEvents(new ConnectionListener(listener), this);
 
         try {
             schemFile = new File("C:\\Users\\Natha\\Desktop\\VillageCraft\\json\\schemjsons.json");
@@ -97,8 +94,6 @@ public final class Main extends JavaPlugin {
 
         servers.add(Spawn.create(Spawn.class, TITLE_SPAWN));
         servers.add(Umbralith.create(Umbralith.class, TITLE_UMBRALITH));
-
-        DetectNPCClicks dnpcc = new DetectNPCClicks();
 
         itemTemplates.addAll(Arrays.asList(
                 new WoodenSword(),
@@ -269,7 +264,6 @@ public final class Main extends JavaPlugin {
 
     public static Schematic getSchematic(String name) {
         for (Schematic s : schematics) {
-            System.out.println(s.name);
             if (s.name.equals(name)) {
                 return s;
             }

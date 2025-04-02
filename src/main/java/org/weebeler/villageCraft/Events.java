@@ -1,7 +1,7 @@
 package org.weebeler.villageCraft;
 
-import org.bukkit.Location;
-import org.bukkit.entity.LivingEntity;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -9,30 +9,95 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.SlimeSplitEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerMoveEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.BoundingBox;
 import org.weebeler.villageCraft.Items.Backend.GenericItem;
 import org.weebeler.villageCraft.Items.Backend.GenericUUIDItem;
 import org.weebeler.villageCraft.Monsters.Backend.GenericMonster;
-import org.weebeler.villageCraft.NPCs.SpawnNPC;
+import org.weebeler.villageCraft.NMS.NPC;
 import org.weebeler.villageCraft.Villagers.Admin;
 import org.weebeler.villageCraft.Villagers.Villager;
 import org.weebeler.villageCraft.Worlds.Home;
 import org.weebeler.villageCraft.Worlds.Server;
 
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.UUID;
 
 public class Events implements Listener {
 
     @EventHandler
-    public void registerUUIDItemsOnJoin(PlayerJoinEvent e) {
+    public void onWorldExit(PlayerTeleportEvent e) {
+        World from = e.getFrom().getWorld();
+        World to = e.getTo().getWorld();
+
+        if (to.getName().equals("world") || to.getName().equals(e.getPlayer().getUniqueId().toString())) {
+            return;
+        }
+
+        if (!from.equals(to)) {
+            System.out.println("Teleported!");
+            Server sTo = Main.getServer(to.getName());
+
+            ArrayList<Player> players = new ArrayList<>(to.getPlayers());
+            players.removeIf(n -> n.getUniqueId().equals(e.getPlayer().getUniqueId()));
+
+            Bukkit.getScheduler().runTaskLater(Main.getPlugin(Main.class), () -> {
+                ArrayList<NPC> toRemove = new ArrayList<>();
+                NPC npc = null;
+                for (int i = 0; i < sTo.npcs.size(); i++) {
+                    npc = sTo.npcs.get(i);
+                    if (!npc.registered) {
+                        npc.createLocation();
+                        npc = npc.create(e.getPlayer());
+                    }
+                    npc.spawn(e.getPlayer());
+                    sTo.npcs.set(i, npc);
+                }
+                if (npc != null) {
+                    for (NPC check : sTo.npcs) {
+                        if (check.name.equals(npc.name) && check.npc.getId() != npc.npc.getId()) {
+                            toRemove.add(check);
+                        }
+                    }
+                    for (NPC r : toRemove) {
+                        sTo.npcs.remove(r);
+                    }
+                }
+            }, 1);
+
+        }
+    }
+
+    @EventHandler
+    public void registerPlayerOnJoin(PlayerJoinEvent e) {
         Player p = e.getPlayer();
+
+        p.teleport(Bukkit.getWorld("world").getSpawnLocation());
+        p.teleport(Main.getServer(Main.TITLE_SPAWN).world.getSpawnLocation().add(0.5, 0, 0.5));
+
+        UUID uuid = p.getUniqueId();
+        boolean found = false;
+        for (Villager v : Main.villagers) {
+            if (Objects.equals(uuid, v.uuid)) {
+                v.player = p;
+                v.setupListener();
+                found = true;
+            }
+        }
+        if (!found) {
+            Villager v = new Villager(p);
+            Main.villagers.add(v);
+            v.setupListener();
+        }
+
+        if (e.getPlayer().isOp()) {
+            Admin a = new Admin(p);
+            Main.admins.add(a);
+        }
+
         for (ItemStack i : p.getInventory().getContents()) {
             if (i != null) {
                 GenericItem nouuid = Main.getItem(i);
@@ -44,39 +109,12 @@ public class Events implements Listener {
         }
     }
 
-
     @EventHandler
-    public void teleportOnJoin(PlayerJoinEvent e) {
-        e.getPlayer().teleport(Main.getServer(Main.TITLE_SPAWN).world.getSpawnLocation().add(0.5, 0, 0.5));
+    public void unregisterPlayerOnQuit(PlayerQuitEvent e) {
+        Villager v = Main.getVillager(e.getPlayer().getUniqueId());
 
-        String name = "Click To Play!";
-        Server s = Main.getServer(Main.TITLE_SPAWN);
-        Location spawnLoc = new Location(s.world, 0.5, 64, 17.5);
-        if (!s.containsNPC(name)) {
-            SpawnNPC npc = new SpawnNPC(e.getPlayer());
-            npc.spawn(spawnLoc);
-            s.npcs.add(npc);
-        } else {
-            s.getNPC(name).update(spawnLoc);
-        }
+        v.stopListener();
 
-        UUID uuid = e.getPlayer().getUniqueId();
-        boolean found = false;
-        for (Villager v : Main.villagers) {
-            if (Objects.equals(uuid, v.uuid)) {
-                v.player = e.getPlayer();
-                found = true;
-            }
-        }
-        if (!found) {
-            Villager v = new Villager(e.getPlayer());
-            Main.villagers.add(v);
-        }
-
-        if (e.getPlayer().isOp()) {
-            Admin a = new Admin(e.getPlayer());
-            Main.admins.add(a);
-        }
     }
 
     @EventHandler
